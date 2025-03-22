@@ -1,7 +1,7 @@
 const axios = require('axios');
 const config = require('../config/config');
 
-const STOCK_SYMBOL = 'IBM';  // Hardcoded stock symbol
+const STOCK_SYMBOL = 'IBM'; // Hardcoded stock symbol
 
 const fetchStockData = async (functionType) => {
   try {
