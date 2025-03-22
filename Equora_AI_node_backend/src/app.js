@@ -1,5 +1,6 @@
 const express = require('express');
-const stockRoutes = require('./routes/stocksDaily.routes');
+const stockDailyRoutes = require('./routes/stocksDaily.routes');
+const stockWeeklyRoutes = require('./routes/stocksWeekly.routes');
 
 const app = express();
 
@@ -7,13 +8,13 @@ const app = express();
 app.use(express.json());
 
 // Routes
-app.use('/api/stocks', stockRoutes);
-
+app.use('/api/stocks', stockDailyRoutes);
+app.use('/api/stocks', stockWeeklyRoutes);
 
 
 // Default Route
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.send('Stocks API is running...');
 });
 
 module.exports = app;
