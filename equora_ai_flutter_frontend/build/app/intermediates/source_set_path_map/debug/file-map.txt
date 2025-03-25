@@ -25,3 +25,5 @@ com.example.equora_ai_flutter_frontend.app-resValues-23 C:\girl hackathon\Equora
 com.example.equora_ai_flutter_frontend.app-packageDebugResources-24 C:\girl hackathon\Equora.AI\TIWiSE-Equora-Ai\equora_ai_flutter_frontend\build\app\intermediates\incremental\debug\packageDebugResources\merged.dir
 com.example.equora_ai_flutter_frontend.app-packageDebugResources-25 C:\girl hackathon\Equora.AI\TIWiSE-Equora-Ai\equora_ai_flutter_frontend\build\app\intermediates\incremental\debug\packageDebugResources\stripped.dir
 com.example.equora_ai_flutter_frontend.app-merged_res-26 C:\girl hackathon\Equora.AI\TIWiSE-Equora-Ai\equora_ai_flutter_frontend\build\app\intermediates\merged_res\debug
+com.example.equora_ai_flutter_frontend.app-packaged_res-27 C:\girl hackathon\Equora.AI\TIWiSE-Equora-Ai\equora_ai_flutter_frontend\build\path_provider_android\intermediates\packaged_res\debug
+com.example.equora_ai_flutter_frontend.app-packaged_res-28 C:\girl hackathon\Equora.AI\TIWiSE-Equora-Ai\equora_ai_flutter_frontend\build\sqflite_android\intermediates\packaged_res\debug
