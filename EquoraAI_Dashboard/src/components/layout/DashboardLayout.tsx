@@ -55,7 +55,7 @@ const navItems = [
   { name: 'OHLC View', path: '/sector-analysis' },
   { name: 'Stock Sentiment', path: '/stock-sentiment' },
   { name: 'News Impact', path: '/news-impact' },
-  { name: 'News & Sentiment', path: '/news-sentiment' }, // Added for sentiment analysis
+  // { name: 'News & Sentiment', path: '/news-sentiment' }, // Added for sentiment analysis
   { name: 'Predictions', path: '/predictions' },
 ];
 
