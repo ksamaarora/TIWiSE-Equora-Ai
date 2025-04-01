@@ -1,11 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { sentimentService, SentimentData } from '@/services/sentimentService';
-import { AlertCircle, Bell, Menu, X, Accessibility, Briefcase, Bitcoin, FileText, BarChart, DollarSign, MessagesSquare, CalendarClock, MailPlus } from 'lucide-react';
+import { 
+  AlertCircle, 
+  Bell, 
+  Menu, 
+  X, 
+  Accessibility, 
+  Briefcase, 
+  Bitcoin, 
+  FileText, 
+  BarChart, 
+  DollarSign, 
+  MessagesSquare, 
+  CalendarClock, 
+  MailPlus,
+  Home,
+  LineChart,
+  TrendingUp,
+  Newspaper,
+  Landmark,
+  Lightbulb,
+  Settings,
+  User
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAccessibility } from '@/lib/accessibility';
 import NewsletterDialog from './NewsletterDialog';
+import LiveDataTicker from './LiveDataTicker';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -51,20 +74,42 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     return 'bg-gradient-to-r from-blue-600/90 to-blue-500/90';
   };
 
-  // Navigation items with their routes
-  const navItems = [
-    { name: 'Market Overview', path: '/' },
-    { name: 'OHLC View', path: '/sector-analysis' },
-    { name: 'Stock Sentiment', path: '/stock-sentiment' },
-    { name: 'News Impact', path: '/news-impact' },
-    { name: 'Portfolio', path: '/portfolio', icon: <Briefcase size={16} /> },
-    { name: 'Cryptocurrency', path: '/cryptocurrency', icon: <Bitcoin size={16} /> },
-    { name: 'Regulatory', path: '/regulatory', icon: <FileText size={16} /> },
-    { name: 'Visualizations', path: '/visualizations', icon: <BarChart size={16} /> },
-    { name: 'Financial Planning', path: '/financial-planning', icon: <DollarSign size={16} /> },
-    { name: 'Discussions', path: '/discussions', icon: <MessagesSquare size={16} /> },
-    { name: 'Calendar', path: '/calendar', icon: <CalendarClock size={16} /> },
-    { name: 'Predictions', path: '/predictions' },
+  // Organized navigation items with sections
+  const navSections = [
+    {
+      title: "Overview",
+      items: [
+        { name: 'Market Overview', path: '/', icon: <Home size={16} /> },
+        { name: 'OHLC View', path: '/sector-analysis', icon: <LineChart size={16} /> },
+        { name: 'Stock Sentiment', path: '/stock-sentiment', icon: <TrendingUp size={16} /> },
+        { name: 'News Impact', path: '/news-impact', icon: <Newspaper size={16} /> },
+      ]
+    },
+    {
+      title: "Markets",
+      items: [
+        { name: 'Portfolio', path: '/portfolio', icon: <Briefcase size={16} /> },
+        { name: 'Cryptocurrency', path: '/cryptocurrency', icon: <Bitcoin size={16} /> },
+        { name: 'Regulatory', path: '/regulatory', icon: <Landmark size={16} /> },
+        { name: 'Financial Planning', path: '/financial-planning', icon: <DollarSign size={16} /> },
+      ]
+    },
+    {
+      title: "Insights",
+      items: [
+        { name: 'Visualizations', path: '/visualizations', icon: <BarChart size={16} /> },
+        { name: 'Predictions', path: '/predictions', icon: <Lightbulb size={16} /> },
+        { name: 'Calendar', path: '/calendar', icon: <CalendarClock size={16} /> },
+        { name: 'Discussions', path: '/discussions', icon: <MessagesSquare size={16} /> },
+      ]
+    },
+    {
+      title: "Account",
+      items: [
+        { name: 'Profile', path: '/profile', icon: <User size={16} /> },
+        { name: 'Settings', path: '/settings', icon: <Settings size={16} /> },
+      ]
+    }
   ];
 
   // Handle navigation item click
@@ -84,7 +129,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     <div className="h-full flex flex-col">
       {/* Header */}
       <header className={cn(
-        "w-full py-4 px-4 md:px-6 text-white backdrop-blur-md z-10 transition-all duration-500",
+        "w-full py-4 px-4 md:px-6 text-white backdrop-blur-md z-10 transition-all duration-500 sticky top-0",
         getSentimentHeaderClass()
       )}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -104,7 +149,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           
           <div className="flex items-center space-x-3">
             {data && (
-              <div className="hidden md:flex items-center space-x-2 mr-4">
+              <div className="hidden md:flex items-center space-x-2 mr-4 bg-black/10 px-3 py-1 rounded-full">
                 <span>Market:</span>
                 <span className="font-medium">{data.marketIndex}</span>
                 <span className={cn(
@@ -138,11 +183,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </div>
       </header>
       
+      {/* Live Data Ticker */}
+      <LiveDataTicker />
+      
       {/* Main content */}
       <main className="flex-1 flex overflow-hidden" id="main-content">
         {/* Sidebar for navigation on larger screens */}
         <aside className={cn(
-          "w-64 bg-white/50 dark:bg-black/50 backdrop-blur-md border-r border-border z-10 transition-all duration-300 ease-in-out",
+          "w-64 bg-white/80 dark:bg-gray-900/90 backdrop-blur-md border-r border-border z-10 transition-all duration-300 ease-in-out overflow-y-auto",
           isMobile ? "fixed inset-y-0 left-0 transform" : "relative",
           isMobile && !menuOpen ? "-translate-x-full" : "translate-x-0"
         )}
@@ -150,32 +198,41 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         aria-hidden={isMobile && !menuOpen}
         >
           <div className="h-full flex flex-col p-4">
-            <div className="py-6">
+            <div className="py-4">
               <h2 className="text-lg font-medium text-primary">Dashboard</h2>
             </div>
             
-            <nav className="space-y-1 flex-1" aria-label="Main navigation">
-              {navItems.map((item) => (
-                <button 
-                  key={item.name}
-                  onClick={() => {
-                    handleNavClick(item.path);
-                    handleSpeakNavItem(item.name);
-                  }}
-                  className={cn(
-                    "w-full text-left flex items-center space-x-2 px-3 py-2 rounded-md transition-colors",
-                    location.pathname === item.path 
-                      ? "bg-primary/10 text-primary" 
-                      : "hover:bg-secondary"
-                  )}
-                  aria-current={location.pathname === item.path ? "page" : undefined}
-                >
-                  {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
-                  <span>{item.name}</span>
-                  {location.pathname === item.path && (
-                    <span className="sr-only">(current page)</span>
-                  )}
-                </button>
+            <nav className="flex-1" aria-label="Main navigation">
+              {navSections.map((section, idx) => (
+                <div key={section.title} className={idx > 0 ? "mt-6" : ""}>
+                  <h3 className="text-xs uppercase font-semibold text-muted-foreground mb-2 px-3">
+                    {section.title}
+                  </h3>
+                  <div className="space-y-1">
+                    {section.items.map((item) => (
+                      <button 
+                        key={item.name}
+                        onClick={() => {
+                          handleNavClick(item.path);
+                          handleSpeakNavItem(item.name);
+                        }}
+                        className={cn(
+                          "w-full text-left flex items-center space-x-3 px-3 py-2 rounded-md transition-colors",
+                          location.pathname === item.path 
+                            ? "bg-primary/10 text-primary font-medium" 
+                            : "hover:bg-secondary text-foreground/80 hover:text-foreground"
+                        )}
+                        aria-current={location.pathname === item.path ? "page" : undefined}
+                      >
+                        <span className="flex-shrink-0 text-foreground/70">{item.icon}</span>
+                        <span>{item.name}</span>
+                        {location.pathname === item.path && (
+                          <span className="sr-only">(current page)</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </nav>
             
@@ -183,9 +240,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             <div className="mt-6 pt-6 border-t border-border">
               <button
                 onClick={() => setShowNewsletterDialog(true)}
-                className="w-full text-left flex items-center space-x-2 px-3 py-2 rounded-md transition-colors hover:bg-secondary bg-primary/5"
+                className="w-full text-left flex items-center space-x-3 px-3 py-2 rounded-md transition-colors hover:bg-secondary bg-primary/5"
               >
-                <span className="flex-shrink-0"><MailPlus size={16} /></span>
+                <span className="flex-shrink-0 text-primary/70"><MailPlus size={16} /></span>
                 <span>Subscribe to Newsletter</span>
               </button>
             </div>
@@ -208,7 +265,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {/* Backdrop for mobile menu */}
       {isMobile && menuOpen && (
         <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-0"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-0"
           onClick={() => setMenuOpen(false)}
           aria-hidden="true"
         />

@@ -22,6 +22,8 @@ import Discussions from '@/pages/Discussions';
 import TestPage from '@/pages/TestPage';
 import SimpleIndex from '@/pages/SimpleIndex';
 import Calendar from '@/pages/Calendar';
+import Profile from '@/pages/Profile';
+import Settings from '@/pages/Settings';
 
 import './App.css';
 // Import our accessibility styles
@@ -106,6 +108,8 @@ function App() {
                 <Route path="/financial-planning" element={<FinancialPlanning />} />
                 <Route path="/discussions" element={<Discussions />} />
                 <Route path="/calendar" element={<Calendar />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <AccessibilityPanel />
