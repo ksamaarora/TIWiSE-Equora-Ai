@@ -12,8 +12,8 @@ import { Pencil, Clock, Shield, Check, AlertCircle, Bell, ChevronRight } from 'l
 const Profile = () => {
   // Mock user data
   const user = {
-    name: 'Alex Thompson',
-    email: 'alex.thompson@example.com',
+    name: 'Team Claire',
+    email: 'teamclaire@gmail.com',
     role: 'Premium Subscriber',
     avatarUrl: '/avatars/user-01.jpg',
     joinDate: 'September 2022',
