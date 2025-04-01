@@ -1,13 +1,13 @@
-
 import { toast } from "sonner";
+import { apiClient } from './apiClient';
 
 export interface NewsletterPreferences {
   email: string;
   frequency: 'daily' | 'weekly' | 'monthly';
-  includeSectorAnalysis: boolean;
-  includeTopStocks: boolean;
-  includeNewsDigest: boolean;
-  includePredictions: boolean;
+  includeSectorAnalysis?: boolean;
+  includeTopStocks?: boolean;
+  includeNewsDigest?: boolean;
+  includePredictions?: boolean;
 }
 
 export interface NewsletterSubscription {
@@ -44,97 +44,61 @@ class NewsletterService {
     }
   }
   
-  async subscribe(preferences: NewsletterPreferences): Promise<NewsletterSubscription | null> {
+  /**
+   * Subscribe a user to the newsletter
+   * @param preferences User's newsletter preferences
+   * @returns Promise resolving to success message or error
+   */
+  async subscribe(preferences: NewsletterPreferences): Promise<{ success: boolean; message: string }> {
     try {
-      // In a real app, this would be an API call
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // In a real application, this would be an API call
+      // For demo purposes, we're simulating a successful API call
       
-      // Check if email already exists
-      const existingIndex = this.subscriptions.findIndex(
-        sub => sub.preferences.email === preferences.email
-      );
+      // Uncomment this when API is ready:
+      // const response = await apiClient.post('/api/newsletter/subscribe', preferences);
+      // return response.data;
       
-      if (existingIndex >= 0) {
-        // Update existing subscription
-        const updated: NewsletterSubscription = {
-          ...this.subscriptions[existingIndex],
-          preferences,
-          isActive: true
-        };
-        
-        this.subscriptions[existingIndex] = updated;
-        this.saveSubscriptions();
-        
-        toast.success("Newsletter preferences updated", {
-          description: "You'll receive updates based on your new preferences."
-        });
-        
-        return updated;
-      }
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Create new subscription
-      const newSubscription: NewsletterSubscription = {
-        id: `sub_${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        preferences,
-        isActive: true
+      console.log('Newsletter subscription:', preferences);
+      
+      return {
+        success: true,
+        message: 'Successfully subscribed to newsletter'
       };
-      
-      this.subscriptions.push(newSubscription);
-      this.saveSubscriptions();
-      
-      toast.success("Newsletter subscription confirmed", {
-        description: `You'll receive ${preferences.frequency} updates to ${preferences.email}.`
-      });
-      
-      return newSubscription;
     } catch (error) {
-      console.error("Error subscribing to newsletter:", error);
-      toast.error("Failed to process subscription", {
-        description: "Please try again later."
-      });
-      return null;
+      console.error('Newsletter subscription error:', error);
+      throw new Error('Failed to subscribe to newsletter');
     }
   }
   
-  async unsubscribe(email: string): Promise<boolean> {
+  /**
+   * Unsubscribe a user from the newsletter
+   * @param email User's email address
+   * @returns Promise resolving to success message or error
+   */
+  async unsubscribe(email: string): Promise<{ success: boolean; message: string }> {
     try {
-      // In a real app, this would be an API call
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // In a real application, this would be an API call
+      // For demo purposes, we're simulating a successful API call
       
-      // Find subscription
-      const index = this.subscriptions.findIndex(
-        sub => sub.preferences.email === email
-      );
+      // Uncomment this when API is ready:
+      // const response = await apiClient.post('/api/newsletter/unsubscribe', { email });
+      // return response.data;
       
-      if (index < 0) {
-        toast.error("Subscription not found", {
-          description: "No active subscription found for this email."
-        });
-        return false;
-      }
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Update subscription to inactive
-      this.subscriptions[index] = {
-        ...this.subscriptions[index],
-        isActive: false
+      console.log('Newsletter unsubscription:', email);
+      
+      return {
+        success: true,
+        message: 'Successfully unsubscribed from newsletter'
       };
-      
-      this.saveSubscriptions();
-      
-      toast.success("Unsubscribed successfully", {
-        description: "You won't receive any more newsletter emails."
-      });
-      
-      return true;
     } catch (error) {
-      console.error("Error unsubscribing from newsletter:", error);
-      toast.error("Failed to process unsubscription", {
-        description: "Please try again later."
-      });
-      return false;
+      console.error('Newsletter unsubscription error:', error);
+      throw new Error('Failed to unsubscribe from newsletter');
     }
   }
   

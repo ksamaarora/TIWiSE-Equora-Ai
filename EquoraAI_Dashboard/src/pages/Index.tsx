@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import SentimentOverview from '@/components/dashboard/SentimentOverview';
@@ -15,8 +14,11 @@ import SentimentPrediction from '@/components/dashboard/SentimentPrediction';
 import ClusterAnalysis from '@/components/dashboard/ClusterAnalysis';
 import AIAssistant from '@/components/dashboard/AIAssistant';
 import GeoLocationMap from '@/components/dashboard/GeoLocationMap';
+import FinanceMemes from '@/components/dashboard/FinanceMemes';
+import UpcomingEvents from '@/components/dashboard/UpcomingEvents';
 import { sentimentService, SentimentData } from '@/services/sentimentService';
 import { formatDate } from '@/utils/formatters';
+import { motion } from 'framer-motion';
 
 const Index = () => {
   const [data, setData] = useState<SentimentData | null>(null);
@@ -84,7 +86,11 @@ const Index = () => {
           </div>
           <div>
             {data && (
-              <SectorAnalysis sectors={data.sectors} loading={loading} />
+              <SectorAnalysis 
+                lastPrice={data.currentValue} 
+                sentiment={data.overallSentiment > 0.3 ? "bullish" : data.overallSentiment < -0.3 ? "bearish" : "neutral"} 
+                volume={data.volume} 
+              />
             )}
           </div>
         </div>
@@ -171,11 +177,27 @@ const Index = () => {
               </>
             )}
           </div>
-          <div>
+          <div className="space-y-6">
             <NewsletterForm />
+            <UpcomingEvents loading={loading} />
           </div>
         </div>
       </div>
+      
+      {/* Finance Memes Section with Animation */}
+      <motion.div 
+        className="mt-12 mb-8"
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 100, 
+          damping: 15,
+          delay: 0.2
+        }}
+      >
+        <FinanceMemes />
+      </motion.div>
       
       {/* AI Assistant (floats on all pages) */}
       <AIAssistant />
