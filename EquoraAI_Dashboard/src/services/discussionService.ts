@@ -90,7 +90,7 @@ const mockUsers: User[] = [
   },
   {
     id: 'u3',
-    name: 'Jamie Roberts',
+    name: 'Team Claire',
     avatar: '/avatars/user3.png',
     role: 'user',
     expertise: ['stock-picks'],

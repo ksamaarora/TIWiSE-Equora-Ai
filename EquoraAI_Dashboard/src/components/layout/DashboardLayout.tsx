@@ -41,7 +41,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme, speakText } = useAccessibility();
+  const { theme, speakText, navigationVoice } = useAccessibility();
   
   useEffect(() => {
     // Subscribe to sentiment data updates
@@ -122,7 +122,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   
   // Handle text-to-speech for navigation items
   const handleSpeakNavItem = (navName: string) => {
-    speakText(`Navigating to ${navName}`);
+    if (navigationVoice) {
+      speakText(`Navigating to ${navName}`);
+    }
   };
   
   return (

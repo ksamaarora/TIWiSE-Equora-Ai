@@ -53,6 +53,10 @@ interface AccessibilityContextType {
   isSpeaking: boolean;
   stopSpeaking: () => void;
   
+  // Navigation voice
+  navigationVoice: boolean;
+  setNavigationVoice: (enabled: boolean) => void;
+  
   // Speech to text
   startListening: () => void;
   stopListening: () => void;
@@ -80,6 +84,9 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
   
   // Text to Speech
   const [isSpeaking, setIsSpeaking] = useState(false);
+  
+  // Navigation Voice
+  const [navigationVoice, setNavigationVoice] = useState(false);
   
   // Speech to Text
   const [isListening, setIsListening] = useState(false);
@@ -253,6 +260,8 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     speakText,
     isSpeaking,
     stopSpeaking,
+    navigationVoice,
+    setNavigationVoice,
     startListening,
     stopListening,
     isListening,

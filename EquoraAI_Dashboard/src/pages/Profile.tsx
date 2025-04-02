@@ -24,7 +24,7 @@ const Profile = () => {
 
   // Mock activity data
   const recentActivity = [
-    { id: 1, type: 'login', description: 'Logged in from New York, NY', date: '2 hours ago', icon: <Clock size={16} /> },
+    { id: 1, type: 'login', description: 'Logged in from India, IN', date: '2 hours ago', icon: <Clock size={16} /> },
     { id: 2, type: 'portfolio', description: 'Added AAPL to watchlist', date: '1 day ago', icon: <Check size={16} /> },
     { id: 3, type: 'alert', description: 'Created price alert for TSLA', date: '3 days ago', icon: <Bell size={16} /> },
     { id: 4, type: 'security', description: 'Changed account password', date: '1 week ago', icon: <Shield size={16} /> },

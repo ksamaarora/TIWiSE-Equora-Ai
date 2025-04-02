@@ -25,7 +25,9 @@ const AccessibilityPanel: React.FC = () => {
     resetTranscript,
     language,
     setLanguage,
-    speakText
+    speakText,
+    navigationVoice,
+    setNavigationVoice
   } = useAccessibility();
 
   // Listen for toggle events from the header button
@@ -208,6 +210,20 @@ const AccessibilityPanel: React.FC = () => {
                     <span>Stop Reading</span>
                   </Button>
                 )}
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Navigation Announcements</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Voice announcements when navigating pages
+                  </p>
+                </div>
+                <Switch 
+                  checked={navigationVoice}
+                  onCheckedChange={setNavigationVoice}
+                  aria-label="Toggle navigation voice announcements"
+                />
               </div>
               
               <div>
