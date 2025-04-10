@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { User } from 'firebase/auth';
 
 // Define types for financial planning data
 export interface RiskTolerance {
@@ -25,6 +26,7 @@ export interface UserProfile {
   riskTolerance: RiskTolerance['level'];
   investmentHorizon: number; // in years
   goals: FinancialGoal[];
+  email?: string; // Add email to associate with Firebase user
 }
 
 export interface AssetAllocation {
@@ -84,6 +86,7 @@ const mockUserProfiles: UserProfile[] = [
     retirement: 120000,
     riskTolerance: 'moderate',
     investmentHorizon: 20,
+    email: 'user1@example.com',
     goals: [
       {
         id: 'g1',
@@ -100,6 +103,27 @@ const mockUserProfiles: UserProfile[] = [
         currentAmount: 30000,
         targetDate: '2025-01-01',
         priority: 'medium'
+      }
+    ]
+  },
+  {
+    id: '2',
+    name: 'Conservative Investor',
+    age: 55,
+    income: 120000,
+    liquidAssets: 200000,
+    retirement: 500000,
+    riskTolerance: 'conservative',
+    investmentHorizon: 10,
+    email: 'user2@example.com',
+    goals: [
+      {
+        id: 'g3',
+        name: 'Retirement',
+        targetAmount: 2000000,
+        currentAmount: 500000,
+        targetDate: '2030-01-01',
+        priority: 'high'
       }
     ]
   }
@@ -385,6 +409,47 @@ class FinancialPlanningService {
   getRiskToleranceDescription(level: RiskTolerance['level']): string {
     return riskToleranceDescriptions[level];
   }
+  
+  // Get profile for a specific Firebase user
+  getProfileForUser(user: User | null): UserProfile | null {
+    if (!user || !user.email) return null;
+    
+    // Try to find a profile with matching email
+    const userProfile = this.profiles.find(profile => profile.email === user.email);
+    
+    // If profile exists, return it
+    if (userProfile) {
+      this.activeProfile = userProfile.id;
+      return userProfile;
+    }
+    
+    // If no profile exists, create a default one for this user
+    const newProfile: UserProfile = {
+      id: `user_${Date.now()}`,
+      name: user.displayName || 'New User',
+      age: 35,
+      income: 85000,
+      liquidAssets: 50000,
+      retirement: 120000,
+      riskTolerance: 'moderate',
+      investmentHorizon: 20,
+      email: user.email,
+      goals: [
+        {
+          id: `goal_${Date.now()}`,
+          name: 'Retirement',
+          targetAmount: 1500000,
+          currentAmount: 120000,
+          targetDate: '2050-01-01',
+          priority: 'high'
+        }
+      ]
+    };
+    
+    this.profiles.push(newProfile);
+    this.activeProfile = newProfile.id;
+    return newProfile;
+  }
 }
 
 // Create singleton instance
@@ -441,6 +506,11 @@ export function useFinancialPlanning() {
     return financialPlanningService.getRiskToleranceDescription(level);
   };
   
+  // Get profile for current Firebase user
+  const getProfileForCurrentUser = (user: User | null) => {
+    return financialPlanningService.getProfileForUser(user);
+  };
+  
   return {
     activeProfile,
     recommendations,
@@ -451,6 +521,7 @@ export function useFinancialPlanning() {
     createNewProfile,
     switchProfile,
     filterOpportunitiesByRisk,
-    getRiskDescription
+    getRiskDescription,
+    getProfileForCurrentUser
   };
 } 

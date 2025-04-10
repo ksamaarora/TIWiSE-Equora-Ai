@@ -1,10 +1,15 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "@/components/ui/sonner";
 import { AccessibilityProvider } from '@/lib/accessibility';
 import AccessibilityPanel from '@/components/ui/accessibility-panel';
+import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { LoginPage } from './pages/auth/LoginPage';
+import { SignupPage } from './pages/auth/SignupPage';
+import PasswordGate from './components/auth/PasswordGate';
 
 import Index from '@/pages/Index';
 import NotFound from '@/pages/NotFound';
@@ -32,49 +37,38 @@ import '@/lib/accessibility.css';
 // Create a client
 const queryClient = new QueryClient();
 
-// Add error boundary
-interface ErrorBoundaryProps {
-  children: ReactNode;
+interface Props {
+  children?: ReactNode;
 }
 
-interface ErrorBoundaryState {
+interface State {
   hasError: boolean;
-  error: Error | null;
 }
 
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false, error: null };
+class ErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false
+  };
+
+  public static getDerivedStateFromError(_: Error): State {
+    return { hasError: true };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error };
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Uncaught error:', error, errorInfo);
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error("Error caught by boundary:", error, errorInfo);
-  }
-
-  render(): ReactNode {
+  public render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100 dark:bg-gray-900">
-          <div className="w-full max-w-md p-8 space-y-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-            <h1 className="text-2xl font-bold text-red-600 dark:text-red-400">Something went wrong</h1>
-            <p className="text-gray-700 dark:text-gray-300">
-              The application encountered an error. Here are the details:
-            </p>
-            <div className="p-4 mt-4 overflow-auto bg-gray-100 dark:bg-gray-900 rounded-md">
-              <pre className="text-sm text-gray-800 dark:text-gray-200">
-                {this.state.error?.toString() || "Unknown error"}
-              </pre>
-            </div>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h1>
             <button
-              className="px-4 py-2 mt-4 text-white bg-blue-500 rounded hover:bg-blue-600"
-              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={() => this.setState({ hasError: false })}
             >
-              Reload Application
+              Try again
             </button>
           </div>
         </div>
@@ -88,36 +82,44 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AccessibilityProvider>
-        <TooltipProvider>
-          <ErrorBoundary>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/simple" element={<SimpleIndex />} />
-                <Route path="/test" element={<TestPage />} />
-                <Route path="/sector-analysis" element={<SectorAnalysis />} />
-                <Route path="/stock-sentiment" element={<StockSentiment />} />
-                <Route path="/news-impact" element={<NewsImpact />} />
-                <Route path="/news-sentiment" element={<NewsSentimentPage />} />
-                <Route path="/predictions" element={<Predictions />} />
-                <Route path="/portfolio" element={<Portfolio />} />
-                <Route path="/cryptocurrency" element={<Cryptocurrency />} />
-                <Route path="/regulatory" element={<Regulatory />} />
-                <Route path="/visualizations" element={<Visualizations />} />
-                <Route path="/financial-planning" element={<FinancialPlanning />} />
-                <Route path="/discussions" element={<Discussions />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <AccessibilityPanel />
-            </BrowserRouter>
-          </ErrorBoundary>
-          <Toaster />
-        </TooltipProvider>
-      </AccessibilityProvider>
+      <PasswordGate>
+        <AuthProvider>
+          <AccessibilityProvider>
+            <TooltipProvider>
+              <ErrorBoundary>
+                <Router>
+                  <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/signup" element={<SignupPage />} />
+                    
+                    {/* Protected Routes */}
+                    <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                    <Route path="/simple" element={<ProtectedRoute><SimpleIndex /></ProtectedRoute>} />
+                    <Route path="/test" element={<ProtectedRoute><TestPage /></ProtectedRoute>} />
+                    <Route path="/sector-analysis" element={<ProtectedRoute><SectorAnalysis /></ProtectedRoute>} />
+                    <Route path="/stock-sentiment" element={<ProtectedRoute><StockSentiment /></ProtectedRoute>} />
+                    <Route path="/news-impact" element={<ProtectedRoute><NewsImpact /></ProtectedRoute>} />
+                    <Route path="/news-sentiment" element={<ProtectedRoute><NewsSentimentPage /></ProtectedRoute>} />
+                    <Route path="/predictions" element={<ProtectedRoute><Predictions /></ProtectedRoute>} />
+                    <Route path="/portfolio" element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
+                    <Route path="/cryptocurrency" element={<ProtectedRoute><Cryptocurrency /></ProtectedRoute>} />
+                    <Route path="/regulatory" element={<ProtectedRoute><Regulatory /></ProtectedRoute>} />
+                    <Route path="/visualizations" element={<ProtectedRoute><Visualizations /></ProtectedRoute>} />
+                    <Route path="/financial-planning" element={<ProtectedRoute><FinancialPlanning /></ProtectedRoute>} />
+                    <Route path="/discussions" element={<ProtectedRoute><Discussions /></ProtectedRoute>} />
+                    <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  <AccessibilityPanel />
+                </Router>
+              </ErrorBoundary>
+            </TooltipProvider>
+          </AccessibilityProvider>
+        </AuthProvider>
+      </PasswordGate>
+      <Toaster />
     </QueryClientProvider>
   );
 }

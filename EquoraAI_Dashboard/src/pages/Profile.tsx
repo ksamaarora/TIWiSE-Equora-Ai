@@ -1,26 +1,70 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTitle } from '@/components/layout/PageTitle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Pencil, Clock, Shield, Check, AlertCircle, Bell, ChevronRight } from 'lucide-react';
+import { Pencil, Clock, Shield, Check, AlertCircle, Bell, ChevronRight, User, Mail, Key, Eye, EyeOff, Save, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useAccessibility } from '@/lib/accessibility';
+import { cn } from '@/lib/utils';
 
 const Profile = () => {
-  // Mock user data
-  const user = {
-    name: 'Team Claire',
-    email: 'teamclaire@gmail.com',
-    role: 'Premium Subscriber',
-    avatarUrl: '/avatars/user-01.jpg',
-    joinDate: 'September 2022',
-    lastActive: '2 hours ago',
-    verified: true,
-    twoFactorEnabled: true
-  };
+  const { user } = useAuth();
+  const { theme } = useAccessibility();
+  
+  // Profile edit state
+  const [isEditing, setIsEditing] = useState(false);
+  const [profile, setProfile] = useState({
+    displayName: '',
+    photoURL: '',
+  });
+
+  // Preferences state
+  const [preferences, setPreferences] = useState({
+    notifications: true,
+    marketAlerts: true,
+    newsletterSubscription: true,
+    dataRefreshRate: '5min',
+    defaultView: 'dashboard',
+    theme: 'system'
+  });
+
+  // Security state
+  const [securitySettings, setSecuritySettings] = useState({
+    twoFactorEnabled: true,
+    passwordLastChanged: '14 days ago',
+    loginNotifications: true,
+    suspiciousActivityAlerts: true
+  });
+
+  // Subscription state
+  const [subscription, setSubscription] = useState({
+    plan: 'Premium',
+    billingCycle: 'Monthly',
+    nextBillingDate: '2023-12-15',
+    amount: '$15.99',
+    status: 'Active'
+  });
+
+  // Load user data when component mounts
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        displayName: user.displayName || 'User',
+        photoURL: user.photoURL || '',
+      });
+    }
+  }, [user]);
 
   // Mock activity data
   const recentActivity = [
@@ -30,6 +74,39 @@ const Profile = () => {
     { id: 4, type: 'security', description: 'Changed account password', date: '1 week ago', icon: <Shield size={16} /> },
     { id: 5, type: 'portfolio', description: 'Updated investment strategy', date: '2 weeks ago', icon: <Check size={16} /> },
   ];
+
+  // Handle profile update
+  const handleProfileUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, you would call an API to update the user's profile
+    toast.success('Profile updated successfully');
+    setIsEditing(false);
+  };
+
+  // Handle preference changes
+  const handlePreferenceChange = (key: string, value: any) => {
+    setPreferences(prev => ({ ...prev, [key]: value }));
+    toast.success(`${key} preference updated`);
+  };
+
+  // Handle security setting changes
+  const handleSecurityChange = (key: string, value: any) => {
+    setSecuritySettings(prev => ({ ...prev, [key]: value }));
+    toast.success(`${key} setting updated`);
+  };
+
+  // Handle subscription change
+  const handleSubscriptionChange = (plan: string) => {
+    setSubscription(prev => ({ ...prev, plan }));
+    toast.success(`Subscription updated to ${plan}`);
+  };
+
+  // Handle password change
+  const handlePasswordChange = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, you would call an API to change the password
+    toast.success('Password changed successfully');
+  };
 
   return (
     <DashboardLayout>
@@ -44,22 +121,58 @@ const Profile = () => {
         <Card className="lg:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xl">Account Overview</CardTitle>
+            <Dialog open={isEditing} onOpenChange={setIsEditing}>
+              <DialogTrigger asChild>
             <Button variant="ghost" size="sm">
               <Pencil className="h-4 w-4 mr-2" />
               Edit
             </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Profile</DialogTitle>
+                  <DialogDescription>
+                    Update your profile information
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleProfileUpdate} className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="displayName">Full Name</Label>
+                    <Input 
+                      id="displayName" 
+                      value={profile.displayName}
+                      onChange={(e) => setProfile({...profile, displayName: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="photoURL">Profile Image URL</Label>
+                    <Input 
+                      id="photoURL" 
+                      value={profile.photoURL}
+                      onChange={(e) => setProfile({...profile, photoURL: e.target.value})}
+                      placeholder="https://example.com/avatar.jpg"
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit">Save Changes</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="flex flex-col items-center mb-6">
               <Avatar className="h-24 w-24 mb-4">
-                <AvatarImage src={user.avatarUrl} alt={user.name} />
-                <AvatarFallback>{user.name.charAt(0)}{user.name.split(' ')[1]?.charAt(0)}</AvatarFallback>
+                <AvatarImage src={profile.photoURL || ''} alt={profile.displayName} />
+                <AvatarFallback>
+                  {profile.displayName ? profile.displayName.charAt(0) : user?.email?.charAt(0)}
+                </AvatarFallback>
               </Avatar>
-              <h3 className="text-xl font-medium">{user.name}</h3>
-              <p className="text-muted-foreground">{user.email}</p>
+              <h3 className="text-xl font-medium">{profile.displayName || 'User'}</h3>
+              <p className="text-muted-foreground">{user?.email}</p>
               <div className="flex items-center mt-2">
-                <Badge variant="secondary" className="mr-2">{user.role}</Badge>
-                {user.verified && (
+                <Badge variant="secondary" className="mr-2">{subscription.plan} Subscriber</Badge>
+                {user?.emailVerified && (
                   <Badge variant="outline" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
                     Verified
                   </Badge>
@@ -72,16 +185,24 @@ const Profile = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Member since</span>
-                <span className="font-medium">{user.joinDate}</span>
+                <span className="font-medium">
+                  {user?.metadata?.creationTime ? 
+                    new Date(user.metadata.creationTime).toLocaleDateString() : 
+                    'N/A'}
+                </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Last active</span>
-                <span className="font-medium">{user.lastActive}</span>
+                <span className="text-muted-foreground">Last login</span>
+                <span className="font-medium">
+                  {user?.metadata?.lastSignInTime ? 
+                    new Date(user.metadata.lastSignInTime).toLocaleDateString() : 
+                    'N/A'}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Two-factor auth</span>
                 <span className="font-medium flex items-center">
-                  {user.twoFactorEnabled ? (
+                  {securitySettings.twoFactorEnabled ? (
                     <>
                       <Check size={16} className="text-green-500 mr-1" />
                       Enabled
@@ -146,8 +267,95 @@ const Profile = () => {
                   <CardDescription>Customize your dashboard experience</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground text-center py-12">Preference settings will be shown here</p>
+                  <div className="space-y-6">
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Notifications</h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <Label className="font-medium">Email Notifications</Label>
+                            <p className="text-sm text-muted-foreground">Receive email updates and alerts</p>
+                          </div>
+                          <Switch 
+                            checked={preferences.notifications}
+                            onCheckedChange={(checked) => handlePreferenceChange('notifications', checked)}
+                          />
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <Label className="font-medium">Market Alerts</Label>
+                            <p className="text-sm text-muted-foreground">Price changes and important market updates</p>
+                          </div>
+                          <Switch 
+                            checked={preferences.marketAlerts}
+                            onCheckedChange={(checked) => handlePreferenceChange('marketAlerts', checked)}
+                          />
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <Label className="font-medium">Newsletter Subscription</Label>
+                            <p className="text-sm text-muted-foreground">Weekly market insights and analysis</p>
+                          </div>
+                          <Switch 
+                            checked={preferences.newsletterSubscription}
+                            onCheckedChange={(checked) => handlePreferenceChange('newsletterSubscription', checked)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                      
+                    <Separator />
+
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Display Settings</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="dataRefreshRate">Data Refresh Rate</Label>
+                          <Select 
+                            value={preferences.dataRefreshRate} 
+                            onValueChange={(value) => handlePreferenceChange('dataRefreshRate', value)}
+                          >
+                            <SelectTrigger id="dataRefreshRate">
+                              <SelectValue placeholder="Select refresh rate" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1min">Every 1 minute</SelectItem>
+                              <SelectItem value="5min">Every 5 minutes</SelectItem>
+                              <SelectItem value="15min">Every 15 minutes</SelectItem>
+                              <SelectItem value="30min">Every 30 minutes</SelectItem>
+                              <SelectItem value="manual">Manual refresh only</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="defaultView">Default Dashboard View</Label>
+                          <Select 
+                            value={preferences.defaultView} 
+                            onValueChange={(value) => handlePreferenceChange('defaultView', value)}
+                          >
+                            <SelectTrigger id="defaultView">
+                              <SelectValue placeholder="Select default view" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="dashboard">Market Overview</SelectItem>
+                              <SelectItem value="portfolio">Portfolio</SelectItem>
+                              <SelectItem value="watchlist">Watchlist</SelectItem>
+                              <SelectItem value="news">News Feed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
+                <CardFooter className="border-t">
+                  <div className="w-full flex justify-end">
+                    <Button onClick={() => toast.success('Preferences saved')}>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Preferences
+                    </Button>
+                  </div>
+                </CardFooter>
               </Card>
             </TabsContent>
             
@@ -158,7 +366,117 @@ const Profile = () => {
                   <CardDescription>Manage your subscription plans and billing</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground text-center py-12">Subscription details will be shown here</p>
+                  <div className="space-y-6">
+                    <div className="bg-muted/40 p-4 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-semibold text-lg">{subscription.plan} Plan</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {subscription.billingCycle} billing at {subscription.amount}
+                          </p>
+                        </div>
+                        <Badge>{subscription.status}</Badge>
+                      </div>
+                      <div className="mt-4 text-sm">
+                        <div className="flex justify-between mb-1">
+                          <span>Next billing date:</span>
+                          <span className="font-medium">{subscription.nextBillingDate}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Payment method:</span>
+                          <span className="font-medium">Visa ending in 4242</span>
+                        </div>
+                      </div>
+                    </div>
+                      
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Available Plans</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <Card className={cn(
+                          "cursor-pointer hover:border-primary/50 transition-colors",
+                          subscription.plan === 'Basic' ? "border-primary/70 bg-primary/5" : ""
+                        )}>
+                          <CardHeader className="pb-3">
+                            <CardTitle>Basic</CardTitle>
+                            <CardDescription>For casual investors</CardDescription>
+                          </CardHeader>
+                          <CardContent className="pb-3">
+                            <div className="text-3xl font-bold mb-2">$5.99<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                            <ul className="space-y-2 text-sm mb-4">
+                              <li className="flex items-center"><Check size={16} className="text-green-500 mr-2" /> Basic market data</li>
+                              <li className="flex items-center"><Check size={16} className="text-green-500 mr-2" /> Limited watchlists</li>
+                              <li className="flex items-center"><Check size={16} className="text-green-500 mr-2" /> Daily market summary</li>
+                            </ul>
+                          </CardContent>
+                          <CardFooter>
+                            <Button 
+                              variant={subscription.plan === 'Basic' ? "secondary" : "outline"} 
+                              className="w-full"
+                              onClick={() => handleSubscriptionChange('Basic')}
+                            >
+                              {subscription.plan === 'Basic' ? 'Current Plan' : 'Select Plan'}
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                          
+                        <Card className={cn(
+                          "cursor-pointer hover:border-primary/50 transition-colors",
+                          subscription.plan === 'Premium' ? "border-primary/70 bg-primary/5" : ""
+                        )}>
+                          <CardHeader className="pb-3">
+                            <CardTitle>Premium</CardTitle>
+                            <CardDescription>For active traders</CardDescription>
+                          </CardHeader>
+                          <CardContent className="pb-3">
+                            <div className="text-3xl font-bold mb-2">$15.99<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                            <ul className="space-y-2 text-sm mb-4">
+                              <li className="flex items-center"><Check size={16} className="text-green-500 mr-2" /> Real-time market data</li>
+                              <li className="flex items-center"><Check size={16} className="text-green-500 mr-2" /> Unlimited watchlists</li>
+                              <li className="flex items-center"><Check size={16} className="text-green-500 mr-2" /> Advanced charts</li>
+                              <li className="flex items-center"><Check size={16} className="text-green-500 mr-2" /> Portfolio analysis</li>
+                            </ul>
+                          </CardContent>
+                          <CardFooter>
+                            <Button 
+                              variant={subscription.plan === 'Premium' ? "secondary" : "outline"} 
+                              className="w-full"
+                              onClick={() => handleSubscriptionChange('Premium')}
+                            >
+                              {subscription.plan === 'Premium' ? 'Current Plan' : 'Select Plan'}
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                          
+                        <Card className={cn(
+                          "cursor-pointer hover:border-primary/50 transition-colors",
+                          subscription.plan === 'Enterprise' ? "border-primary/70 bg-primary/5" : ""
+                        )}>
+                          <CardHeader className="pb-3">
+                            <CardTitle>Enterprise</CardTitle>
+                            <CardDescription>For professionals</CardDescription>
+                          </CardHeader>
+                          <CardContent className="pb-3">
+                            <div className="text-3xl font-bold mb-2">$39.99<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                            <ul className="space-y-2 text-sm mb-4">
+                              <li className="flex items-center"><Check size={16} className="text-green-500 mr-2" /> Everything in Premium</li>
+                              <li className="flex items-center"><Check size={16} className="text-green-500 mr-2" /> AI-powered insights</li>
+                              <li className="flex items-center"><Check size={16} className="text-green-500 mr-2" /> Custom alerts</li>
+                              <li className="flex items-center"><Check size={16} className="text-green-500 mr-2" /> Premium research</li>
+                            </ul>
+                          </CardContent>
+                          <CardFooter>
+                            <Button 
+                              variant={subscription.plan === 'Enterprise' ? "secondary" : "outline"} 
+                              className="w-full"
+                              onClick={() => handleSubscriptionChange('Enterprise')}
+                            >
+                              {subscription.plan === 'Enterprise' ? 'Current Plan' : 'Select Plan'}
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -170,7 +488,99 @@ const Profile = () => {
                   <CardDescription>Manage your account security options</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground text-center py-12">Security settings will be shown here</p>
+                  <div className="space-y-6">
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Change Password</h3>
+                      <form onSubmit={handlePasswordChange} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="currentPassword">Current Password</Label>
+                          <div className="relative">
+                            <Input id="currentPassword" type="password" />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="newPassword">New Password</Label>
+                          <div className="relative">
+                            <Input id="newPassword" type="password" />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                          <div className="relative">
+                            <Input id="confirmPassword" type="password" />
+                          </div>
+                        </div>
+                        <Button type="submit">Update Password</Button>
+                      </form>
+                    </div>
+                      
+                    <Separator />
+                      
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Security Options</h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <Label className="font-medium">Two-Factor Authentication</Label>
+                            <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
+                          </div>
+                          <Switch 
+                            checked={securitySettings.twoFactorEnabled}
+                            onCheckedChange={(checked) => handleSecurityChange('twoFactorEnabled', checked)}
+                          />
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <Label className="font-medium">Login Notifications</Label>
+                            <p className="text-sm text-muted-foreground">Get notified when someone logs into your account</p>
+                          </div>
+                          <Switch 
+                            checked={securitySettings.loginNotifications}
+                            onCheckedChange={(checked) => handleSecurityChange('loginNotifications', checked)}
+                          />
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <Label className="font-medium">Suspicious Activity Alerts</Label>
+                            <p className="text-sm text-muted-foreground">Be alerted about suspicious account activity</p>
+                          </div>
+                          <Switch 
+                            checked={securitySettings.suspiciousActivityAlerts}
+                            onCheckedChange={(checked) => handleSecurityChange('suspiciousActivityAlerts', checked)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Active Sessions</h3>
+                      <div className="bg-muted/40 p-4 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-medium">Current Session</p>
+                            <p className="text-sm text-muted-foreground">
+                              {navigator.userAgent.includes('Windows') ? 'Windows' : 
+                               navigator.userAgent.includes('Mac') ? 'Mac OS' : 
+                               navigator.userAgent.includes('Linux') ? 'Linux' : 'Unknown OS'}
+                               {" • "}
+                              {navigator.userAgent.includes('Chrome') ? 'Chrome' :
+                               navigator.userAgent.includes('Firefox') ? 'Firefox' :
+                               navigator.userAgent.includes('Safari') ? 'Safari' :
+                               navigator.userAgent.includes('Edge') ? 'Edge' : 'Unknown Browser'}
+                            </p>
+                          </div>
+                          <Badge variant="outline" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                            Active Now
+                          </Badge>
+                        </div>
+                      </div>
+                      <Button variant="outline" className="text-destructive hover:text-destructive">
+                        Sign Out Of All Sessions
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

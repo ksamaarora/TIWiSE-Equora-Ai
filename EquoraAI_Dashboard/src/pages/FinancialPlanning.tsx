@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useFinancialPlanning } from '@/services/financialPlanningService';
 import { useAccessibility } from '@/lib/accessibility';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 // Import UI components
@@ -389,35 +390,56 @@ const ProfileForm: React.FC<{
 // Main Financial Planning Page Component
 const FinancialPlanning: React.FC = () => {
   const { 
-    activeProfile, 
-    recommendations, 
-    opportunities, 
-    improvements, 
     allProfiles,
+    activeProfile: defaultActiveProfile,
     updateActiveProfile,
     createNewProfile,
     switchProfile,
+    recommendations,
+    opportunities,
+    improvements,
     filterOpportunitiesByRisk,
-    getRiskDescription
+    getRiskDescription,
+    getProfileForCurrentUser
   } = useFinancialPlanning();
   
+  const { user } = useAuth();
   const { speakText } = useAccessibility();
   const [activeTab, setActiveTab] = useState('recommendations');
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [selectedRisk, setSelectedRisk] = useState<string | undefined>(undefined);
+  const [activeProfile, setActiveProfile] = useState(defaultActiveProfile);
+  
+  // Load the user's profile when the component mounts or user changes
+  useEffect(() => {
+    const userProfile = getProfileForCurrentUser(user);
+    if (userProfile) {
+      setActiveProfile(userProfile);
+    }
+  }, [user, getProfileForCurrentUser]);
   
   // Handle profile update
   const handleProfileUpdate = (updatedProfile: any) => {
-    updateActiveProfile(updatedProfile);
+    // Ensure we preserve the email from the original profile
+    const profileWithEmail = {
+      ...updatedProfile,
+      email: activeProfile.email
+    };
+    updateActiveProfile(profileWithEmail);
     setProfileDialogOpen(false);
     setIsEditingProfile(false);
     speakText('Profile updated successfully');
   };
   
-  // Handle creating new profile
+  // Handle creating new profile - disabled for now as we're showing only user's profile
   const handleCreateProfile = (newProfile: any) => {
-    createNewProfile(newProfile);
+    // Add user's email to the new profile
+    const profileWithEmail = {
+      ...newProfile,
+      email: user?.email || ''
+    };
+    createNewProfile(profileWithEmail);
     setProfileDialogOpen(false);
     speakText('New profile created successfully');
   };
@@ -449,6 +471,7 @@ const FinancialPlanning: React.FC = () => {
             </p>
           </div>
           <div className="flex space-x-2">
+            {/* Remove the New Profile button - we only want one profile per user 
             <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" onClick={() => setIsEditingProfile(false)}>
@@ -470,6 +493,7 @@ const FinancialPlanning: React.FC = () => {
                 />
               </DialogContent>
             </Dialog>
+            */}
             
             <Button variant="outline" onClick={() => window.location.reload()}>
               <RefreshCw className="h-4 w-4" />
@@ -481,7 +505,7 @@ const FinancialPlanning: React.FC = () => {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex justify-between items-center">
-              <CardTitle>Current Financial Profile</CardTitle>
+              <CardTitle>Your Financial Profile</CardTitle>
               <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                 <DialogTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-8 gap-1">
@@ -491,7 +515,7 @@ const FinancialPlanning: React.FC = () => {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[500px]">
                   <DialogHeader>
-                    <DialogTitle>Edit Profile</DialogTitle>
+                    <DialogTitle>Edit Your Profile</DialogTitle>
                     <DialogDescription>
                       Update your financial details to receive updated recommendations.
                     </DialogDescription>
@@ -578,6 +602,7 @@ const FinancialPlanning: React.FC = () => {
               </div>
             </div>
           </CardContent>
+          {/* Remove the profile switcher - we only show the current user's profile
           {allProfiles.length > 1 && (
             <CardFooter className="pt-0 border-t flex flex-wrap gap-2">
               <div className="text-sm text-muted-foreground mr-2">Switch Profile:</div>
@@ -594,6 +619,7 @@ const FinancialPlanning: React.FC = () => {
               ))}
             </CardFooter>
           )}
+          */}
         </Card>
         
         {/* Tabs */}
