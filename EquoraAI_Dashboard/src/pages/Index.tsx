@@ -173,7 +173,7 @@ const Index = () => {
             {data && (
               <>
                 <TopStocks stocks={data.topStocks} loading={loading} />
-                <NewsImpact news={data.recentNews} loading={loading} />
+                <NewsImpact tickers="AAPL,MSFT,GOOGL,AMZN,META" />
               </>
             )}
           </div>

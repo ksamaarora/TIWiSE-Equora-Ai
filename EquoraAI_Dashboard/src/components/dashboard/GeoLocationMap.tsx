@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -149,7 +148,7 @@ const GeoLocationMap: React.FC<GeoLocationMapProps> = ({
   }
   
   return (
-    <Card className="w-full h-[400px] shadow-md overflow-hidden">
+    <Card className="w-full h-[400px] shadow-md overflow-hidden relative z-10">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2">
           <span>Global Market Pulse</span>
@@ -168,7 +167,7 @@ const GeoLocationMap: React.FC<GeoLocationMapProps> = ({
             <MapContainer 
               center={[20, 0]} 
               zoom={2} 
-              style={{ height: '100%', width: '100%', background: '#242730' }}
+              style={{ height: '100%', width: '100%', background: '#242730', zIndex: 10 }}
               zoomControl={false}
               attributionControl={false}
               scrollWheelZoom={false}

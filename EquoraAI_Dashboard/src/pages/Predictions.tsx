@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +20,16 @@ import {
 import { sentimentService } from '@/services/sentimentService';
 import { formatDate } from '@/utils/formatters';
 import SentimentPrediction from '@/components/dashboard/SentimentPrediction';
-import { CalendarDays, TrendingUp, AlertTriangle, Info, TrendingDown } from 'lucide-react';
+import { 
+  CalendarDays, 
+  TrendingUp, 
+  AlertTriangle, 
+  Info, 
+  TrendingDown,
+  Brain, 
+  Layers, 
+  BarChart3
+} from 'lucide-react';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +43,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ModelComparisonChart from '@/components/visualizations/ModelComparisonChart';
+import { predictionService, PredictionResult } from '@/services/predictionService';
+import { visualizationService } from '@/services/visualizationService';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 
 // Type for tooltip props to fix the ValueType issues
 interface CustomTooltipProps extends TooltipProps<number, string> {
@@ -72,6 +93,11 @@ const PredictionsPage = () => {
     anomalies: [],
     nextPeak: ''
   });
+  const [selectedStock, setSelectedStock] = useState<string>('AAPL');
+  const [forecastDays, setForecastDays] = useState<number>(30);
+  const [stockPrediction, setStockPrediction] = useState<PredictionResult | null>(null);
+  const [stockLoading, setStockLoading] = useState<boolean>(true);
+  const stockList = visualizationService.getStockList();
 
   useEffect(() => {
     // Subscribe to sentiment data updates
@@ -95,6 +121,30 @@ const PredictionsPage = () => {
       unsubscribe();
     };
   }, []);
+
+  // Load stock prediction data
+  useEffect(() => {
+    setStockLoading(true);
+    // Short timeout to allow UI to show loading state
+    const timer = setTimeout(() => {
+      const prediction = predictionService.getPrediction(selectedStock, 90, forecastDays);
+      setStockPrediction(prediction);
+      setStockLoading(false);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [selectedStock, forecastDays]);
+
+  // Handle stock selection change
+  const handleStockChange = (value: string) => {
+    setSelectedStock(value);
+    predictionService.clearCache(selectedStock);
+  };
+
+  // Handle forecast days change
+  const handleForecastDaysChange = (value: string) => {
+    setForecastDays(parseInt(value));
+  };
 
   // Generate volatility forecast using ML-inspired algorithms
   const generateVolatilityForecast = (currentVolatility: number) => {
@@ -321,14 +371,340 @@ const PredictionsPage = () => {
     <DashboardLayout>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-semibold tracking-tight">Predictions</h1>
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
+            <Brain className="h-5 w-5 text-muted-foreground" />
+            <span className="text-sm font-medium">AI-Powered Price Prediction</span>
+          </div>
+          
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Info className="h-4 w-4 mr-2" />
+                About ML Models
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold">Machine Learning Models for Financial Forecasting</DialogTitle>
+                <DialogDescription>
+                  Understanding ARIMA and LSTM models for time series prediction
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="mt-4 space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
+                    ARIMA (AutoRegressive Integrated Moving Average)
+                  </h3>
+                  <Separator className="my-2" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        ARIMA is a statistical model that uses historical values and their differences to forecast future values of a time series.
+                        It combines three components:
+                      </p>
+                      <ul className="mt-2 list-disc pl-5 text-sm space-y-1">
+                        <li><span className="font-medium">AR (AutoRegressive)</span>: Uses past values to predict future values</li>
+                        <li><span className="font-medium">I (Integrated)</span>: Applies differencing to make the time series stationary</li>
+                        <li><span className="font-medium">MA (Moving Average)</span>: Uses past forecast errors for future predictions</li>
+                      </ul>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        ARIMA models are specified as ARIMA(p,d,q) where:
+                      </p>
+                      <ul className="mt-1 list-disc pl-5 text-sm space-y-1">
+                        <li><span className="font-medium">p</span>: The order of the autoregressive component</li>
+                        <li><span className="font-medium">d</span>: The degree of differencing required</li>
+                        <li><span className="font-medium">q</span>: The order of the moving average component</li>
+                      </ul>
+                    </div>
+                    <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 text-sm">
+                      <div className="font-semibold mb-2">ARIMA Equation:</div>
+                      <div className="font-mono bg-white dark:bg-slate-800 p-2 rounded text-xs mb-3">
+                        Yt = c + φ1Yt-1 + φ2Yt-2 + ... + φpYt-p + θ1et-1 + θ2et-2 + ... + θqet-q + et
+                      </div>
+                      <div className="space-y-1 text-xs">
+                        <div><span className="font-medium">Yt</span>: Value at time t</div>
+                        <div><span className="font-medium">c</span>: Constant term</div>
+                        <div><span className="font-medium">φ</span>: AR parameters</div>
+                        <div><span className="font-medium">θ</span>: MA parameters</div>
+                        <div><span className="font-medium">et</span>: Error term</div>
+                      </div>
+                      <div className="mt-3 font-semibold">Best for:</div>
+                      <div className="text-xs">Linear time series with clear patterns and seasonality, short-term forecasts</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                    LSTM (Long Short-Term Memory)
+                  </h3>
+                  <Separator className="my-2" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        LSTM is a specialized type of Recurrent Neural Network (RNN) designed to capture long-term dependencies in time series data.
+                        It uses a sophisticated gating mechanism to retain important information while forgetting irrelevant details.
+                      </p>
+                      <div className="mt-2 text-sm">
+                        <div className="font-medium">Key Components:</div>
+                        <ul className="mt-1 list-disc pl-5 text-sm space-y-1">
+                          <li><span className="font-medium">Memory Cell</span>: Stores information over long sequences</li>
+                          <li><span className="font-medium">Forget Gate</span>: Decides what information to discard</li>
+                          <li><span className="font-medium">Input Gate</span>: Updates the cell state with new information</li>
+                          <li><span className="font-medium">Output Gate</span>: Controls what information flows to the next layer</li>
+                        </ul>
+                      </div>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Unlike ARIMA, LSTM can identify complex non-linear patterns and long-term dependencies, making it powerful for financial forecasting.
+                      </p>
+                    </div>
+                    <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 text-sm">
+                      <div className="font-semibold mb-2">LSTM Cell Structure:</div>
+                      <div className="bg-white dark:bg-slate-800 p-2 rounded text-xs mb-3 font-mono">
+                        ft = σ(Wf·[ht-1,xt] + bf)<br/>
+                        it = σ(Wi·[ht-1,xt] + bi)<br/>
+                        C̃t = tanh(WC·[ht-1,xt] + bC)<br/>
+                        Ct = ft * Ct-1 + it * C̃t<br/>
+                        ot = σ(Wo·[ht-1,xt] + bo)<br/>
+                        ht = ot * tanh(Ct)
+                      </div>
+                      <div className="space-y-1 text-xs">
+                        <div><span className="font-medium">ft</span>: Forget gate output</div>
+                        <div><span className="font-medium">it</span>: Input gate output</div>
+                        <div><span className="font-medium">ot</span>: Output gate output</div>
+                        <div><span className="font-medium">Ct</span>: Cell state</div>
+                        <div><span className="font-medium">ht</span>: Hidden state (output)</div>
+                      </div>
+                      <div className="mt-3 font-semibold">Best for:</div>
+                      <div className="text-xs">Complex non-linear patterns, long-term dependencies, and high volatility forecasting</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 mr-2"></div>
+                    Ensemble Approach
+                  </h3>
+                  <Separator className="my-2" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Our forecasting system combines both ARIMA and LSTM models to leverage their complementary strengths:
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                    <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3">
+                      <h4 className="font-medium text-sm mb-1">ARIMA Strengths</h4>
+                      <ul className="list-disc pl-4 text-xs space-y-0.5 text-muted-foreground">
+                        <li>Interpretable results</li>
+                        <li>Excellent for clear trends</li>
+                        <li>Handles seasonality well</li>
+                        <li>Works with limited data</li>
+                        <li>Efficient computation</li>
+                      </ul>
+                    </div>
+                    <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3">
+                      <h4 className="font-medium text-sm mb-1">LSTM Strengths</h4>
+                      <ul className="list-disc pl-4 text-xs space-y-0.5 text-muted-foreground">
+                        <li>Captures complex patterns</li>
+                        <li>Remembers long-term dependencies</li>
+                        <li>Adapts to market regime changes</li>
+                        <li>Handles non-linearity</li>
+                        <li>Better with high volatility</li>
+                      </ul>
+                    </div>
+                    <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3">
+                      <h4 className="font-medium text-sm mb-1">Ensemble Benefits</h4>
+                      <ul className="list-disc pl-4 text-xs space-y-0.5 text-muted-foreground">
+                        <li>Higher overall accuracy</li>
+                        <li>Reduced prediction errors</li>
+                        <li>More robust to market changes</li>
+                        <li>Balances short and long-term factors</li>
+                        <li>Provides confidence intervals</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <p className="text-sm mt-3 text-muted-foreground">
+                    The ensemble model uses a weighted average of both ARIMA and LSTM predictions, with weights dynamically adjusted based on recent performance metrics. This approach typically improves forecast accuracy by 5-15% compared to individual models.
+                  </p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      <Tabs defaultValue="sentiment">
-        <TabsList>
-          <TabsTrigger value="sentiment">Sentiment Forecast</TabsTrigger>
-          <TabsTrigger value="price">Price Forecast</TabsTrigger>
-          <TabsTrigger value="volatility">Volatility Forecast</TabsTrigger>
+      <Tabs defaultValue="price-prediction">
+        <TabsList className="mb-4">
+          <TabsTrigger value="price-prediction" className="flex items-center gap-1">
+            <BarChart3 className="h-4 w-4" /> Price Prediction
+          </TabsTrigger>
+          <TabsTrigger value="sentiment" className="flex items-center gap-1">
+            <TrendingUp className="h-4 w-4" /> Sentiment Forecast
+          </TabsTrigger>
+          <TabsTrigger value="volatility" className="flex items-center gap-1">
+            <Layers className="h-4 w-4" /> Volatility Forecast
+          </TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="price-prediction" className="mt-4 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="md:col-span-3">
+              <Select value={selectedStock} onValueChange={handleStockChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select stock" />
+                </SelectTrigger>
+                <SelectContent>
+                  {stockList.map(stock => (
+                    <SelectItem key={stock.ticker} value={stock.ticker}>
+                      {stock.ticker} - {stock.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <Select value={forecastDays.toString()} onValueChange={handleForecastDaysChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Forecast period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7">7 Days</SelectItem>
+                <SelectItem value="14">14 Days</SelectItem>
+                <SelectItem value="30">30 Days</SelectItem>
+                <SelectItem value="60">60 Days</SelectItem>
+                <SelectItem value="90">90 Days</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {stockPrediction && (
+            <ModelComparisonChart
+              historicalData={stockPrediction.historicalData}
+              predictions={stockPrediction.predictions}
+              modelInsights={stockPrediction.modelInsights}
+              loading={stockLoading}
+              ticker={selectedStock}
+            />
+          )}
+          
+          {stockPrediction && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+              <Card className="md:col-span-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-medium">Technical Indicators</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm text-muted-foreground">RSI (14)</div>
+                    <div className="font-medium">
+                      {isFinite(stockPrediction.insights.rsi) 
+                        ? stockPrediction.insights.rsi.toFixed(2) 
+                        : 'N/A'}
+                    </div>
+                    <div className={`text-xs ${
+                      !isFinite(stockPrediction.insights.rsi) ? 'text-muted-foreground' :
+                      stockPrediction.insights.rsi > 70 ? 'text-red-500' :
+                      stockPrediction.insights.rsi < 30 ? 'text-green-500' : 'text-muted-foreground'
+                    }`}>
+                      {!isFinite(stockPrediction.insights.rsi) ? 'Unavailable' :
+                       stockPrediction.insights.rsi > 70 ? 'Overbought' :
+                       stockPrediction.insights.rsi < 30 ? 'Oversold' : 'Neutral'}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm text-muted-foreground">MACD</div>
+                    <div className="font-medium">
+                      {isFinite(stockPrediction.insights.macd.histogram) 
+                        ? stockPrediction.insights.macd.histogram.toFixed(4) 
+                        : 'N/A'}
+                    </div>
+                    <div className={`text-xs ${
+                      !isFinite(stockPrediction.insights.macd.histogram) ? 'text-muted-foreground' :
+                      stockPrediction.insights.macd.histogram > 0 ? 'text-green-500' : 'text-red-500'
+                    }`}>
+                      {!isFinite(stockPrediction.insights.macd.histogram) ? 'Unavailable' :
+                       stockPrediction.insights.macd.histogram > 0 ? 'Bullish' : 'Bearish'}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm text-muted-foreground">Support</div>
+                    <div className="font-medium">
+                      {isFinite(stockPrediction.insights.support) 
+                        ? `$${stockPrediction.insights.support.toFixed(2)}` 
+                        : 'N/A'}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm text-muted-foreground">Resistance</div>
+                    <div className="font-medium">
+                      {isFinite(stockPrediction.insights.resistance) 
+                        ? `$${stockPrediction.insights.resistance.toFixed(2)}` 
+                        : 'N/A'}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="md:col-span-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-medium">Prediction Insights</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Predicted Trend:</span>
+                    <Badge variant={stockPrediction.insights.trend === 'up' ? 'default' : 
+                                    stockPrediction.insights.trend === 'down' ? 'destructive' : 'outline'}>
+                      {stockPrediction.insights.trend === 'up' ? 'Bullish' :
+                       stockPrediction.insights.trend === 'down' ? 'Bearish' : 'Neutral'}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Volatility:</span>
+                    <Badge variant={!isFinite(stockPrediction.insights.volatility) ? 'outline' :
+                                    stockPrediction.insights.volatility > 25 ? 'destructive' :
+                                    stockPrediction.insights.volatility < 15 ? 'outline' : 'secondary'}>
+                      {!isFinite(stockPrediction.insights.volatility) ? 'Unknown' :
+                       stockPrediction.insights.volatility > 25 ? 'High' :
+                       stockPrediction.insights.volatility < 15 ? 'Low' : 'Medium'}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Confidence Level:</span>
+                    <span className="font-medium">
+                      {isFinite(stockPrediction.insights.confidence) 
+                        ? `${stockPrediction.insights.confidence}%` 
+                        : 'N/A'}
+                    </span>
+                  </div>
+                  
+                  {stockPrediction.insights.anomalies.length > 0 && (
+                    <div className="mt-2 p-2 bg-amber-50 border border-amber-100 dark:bg-amber-900/20 dark:border-amber-800 rounded">
+                      <div className="flex items-start">
+                        <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 mr-2 shrink-0" />
+                        <div>
+                          <div className="text-xs font-medium text-amber-800 dark:text-amber-300">
+                            {stockPrediction.insights.anomalies[0].type}
+                          </div>
+                          <div className="text-xs text-amber-700 dark:text-amber-400">
+                            {stockPrediction.insights.anomalies[0].description}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
         
         <TabsContent value="sentiment" className="mt-4">
           {data && (
@@ -339,65 +715,6 @@ const PredictionsPage = () => {
               loading={loading}
             />
           )}
-        </TabsContent>
-        
-        <TabsContent value="price" className="mt-4">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle>Price Prediction</CardTitle>
-                  <CardDescription className="flex items-center gap-1">
-                    <CalendarDays className="h-4 w-4" /> 5-Day Market Index Forecast
-                  </CardDescription>
-                </div>
-                <div className="flex items-center space-x-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 py-1 px-2 rounded-md text-sm">
-                  <TrendingUp className="h-4 w-4" />
-                  <span>+2.8%</span>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <Skeleton className="w-full h-[350px]" />
-              ) : (
-                <div className="w-full h-[350px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={predictionData}
-                      margin={{
-                        top: 10,
-                        right: 30,
-                        left: 0,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.4} />
-                      <XAxis dataKey="date" />
-                      <YAxis domain={['dataMin - 10', 'dataMax + 10']} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Line
-                        type="monotone"
-                        dataKey="value"
-                        stroke="var(--color-primary)"
-                        strokeWidth={2}
-                        dot={{ r: 4 }}
-                        activeDot={{ r: 6 }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="predicted"
-                        stroke="#22c55e"
-                        strokeWidth={2}
-                        strokeDasharray="5 5"
-                        dot={{ fill: "#22c55e", r: 4 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </TabsContent>
         
         <TabsContent value="volatility" className="mt-4">

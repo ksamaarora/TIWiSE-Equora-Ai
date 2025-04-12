@@ -20,6 +20,8 @@ import NewsSentimentPage from '@/pages/NewsSentiment';
 import Predictions from '@/pages/Predictions';
 import Portfolio from '@/pages/Portfolio';
 import Cryptocurrency from '@/pages/Cryptocurrency';
+import CryptoView from '@/pages/CryptoView';
+import EarningsTranscript from '@/pages/EarningsTranscript';
 import Regulatory from '@/pages/Regulatory';
 import Visualizations from '@/pages/Visualizations';
 import FinancialPlanning from '@/pages/FinancialPlanning';
@@ -29,10 +31,18 @@ import SimpleIndex from '@/pages/SimpleIndex';
 import Calendar from '@/pages/Calendar';
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
+import CompanyOverview from '@/pages/CompanyOverview';
+import ChatPage from '@/pages/ChatPage';
+import GlobalMarketStatus from '@/pages/GlobalMarketStatus';
+import TickerSearch from '@/pages/TickerSearch';
+import ForexAnalysis from '@/pages/ForexAnalysis';
+import CryptoNews from '@/pages/CryptoNews';
 
 import './App.css';
 // Import our accessibility styles
 import '@/lib/accessibility.css';
+// Import map z-index fixes
+import '@/lib/map-fix.css';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -103,13 +113,22 @@ function App() {
                     <Route path="/predictions" element={<ProtectedRoute><Predictions /></ProtectedRoute>} />
                     <Route path="/portfolio" element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
                     <Route path="/cryptocurrency" element={<ProtectedRoute><Cryptocurrency /></ProtectedRoute>} />
+                    <Route path="/crypto-view" element={<ProtectedRoute><CryptoView /></ProtectedRoute>} />
+                    <Route path="/earnings-transcript" element={<ProtectedRoute><EarningsTranscript /></ProtectedRoute>} />
                     <Route path="/regulatory" element={<ProtectedRoute><Regulatory /></ProtectedRoute>} />
                     <Route path="/visualizations" element={<ProtectedRoute><Visualizations /></ProtectedRoute>} />
                     <Route path="/financial-planning" element={<ProtectedRoute><FinancialPlanning /></ProtectedRoute>} />
                     <Route path="/discussions" element={<ProtectedRoute><Discussions /></ProtectedRoute>} />
                     <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+                    <Route path="/company-overview" element={<ProtectedRoute><CompanyOverview /></ProtectedRoute>} />
+                    <Route path="/global-market-status" element={<ProtectedRoute><GlobalMarketStatus /></ProtectedRoute>} />
+                    <Route path="/ticker-search" element={<ProtectedRoute><TickerSearch /></ProtectedRoute>} />
+                    <Route path="/forex-analysis" element={<ProtectedRoute><ForexAnalysis /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                    <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+                    <Route path="/chat/:roomId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+                    <Route path="crypto-news" element={<CryptoNews />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   <AccessibilityPanel />

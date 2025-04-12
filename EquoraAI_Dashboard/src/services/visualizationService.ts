@@ -211,7 +211,7 @@ const generateComparisonMetrics = (stock1: string, stock2: string): ComparisonMe
 };
 
 // Visualization service
-class VisualizationService {
+export class VisualizationService {
   private stockData: Map<string, StockDataPoint[]> = new Map();
   private sectorPerformance: SectorPerformance[] = [...mockSectorPerformance];
   private stockMetrics: StockMetric[] = generateStockMetrics();
@@ -219,13 +219,41 @@ class VisualizationService {
   private marketCapData: MarketCapData[] = generateMarketCapData();
   
   constructor() {
-    // Initialize stock data
+    // Initialize stock data for all stocks
     mockStocks.forEach(stock => {
       this.stockData.set(
         stock.ticker, 
-        generateTimeSeries(180, stock.volatility, stock.trend, stock.startPrice)
+        generateTimeSeries(365, stock.volatility, stock.trend, stock.startPrice)
       );
     });
+  }
+  
+  // Force regeneration of data for a specific stock
+  forceRegenerateData(ticker: string, comparisonTicker?: string) {
+    const stock = mockStocks.find(s => s.ticker === ticker);
+    
+    if (stock) {
+      // Regenerate data for the selected stock
+      this.stockData.set(
+        stock.ticker, 
+        generateTimeSeries(365, stock.volatility, stock.trend, stock.startPrice)
+      );
+    }
+    
+    // If comparison ticker is provided, regenerate its data too
+    if (comparisonTicker) {
+      const comparisonStock = mockStocks.find(s => s.ticker === comparisonTicker);
+      if (comparisonStock) {
+        this.stockData.set(
+          comparisonStock.ticker, 
+          generateTimeSeries(365, comparisonStock.volatility, comparisonStock.trend, comparisonStock.startPrice)
+        );
+      }
+    }
+    
+    // Regenerate market data as well
+    this.marketCapData = generateMarketCapData();
+    this.correlationData = generateCorrelationMatrix();
   }
   
   // Get stock price data for a specific ticker
@@ -284,6 +312,11 @@ export function useStockVisualization() {
   const [timeRange, setTimeRange] = useState<number>(90);
   const [comparisonStock, setComparisonStock] = useState<string | null>(null);
   
+  // Force reload of stock data
+  const reloadData = (ticker: string = selectedStock, comparisonTicker: string | null = null) => {
+    visualizationService.forceRegenerateData(ticker, comparisonTicker || undefined);
+  };
+  
   // Get data for the selected stock
   const stockData = visualizationService.getStockData(selectedStock, timeRange);
   const candlestickData = visualizationService.getCandlestickData(selectedStock, timeRange);
@@ -318,6 +351,7 @@ export function useStockVisualization() {
     correlationData,
     marketCapData,
     comparisonData,
-    comparisonMetrics
+    comparisonMetrics,
+    reloadData
   };
 } 

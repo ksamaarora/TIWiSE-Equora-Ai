@@ -182,7 +182,7 @@ const LiveDataTicker = () => {
   };
   
   return (
-    <div className="w-full bg-black/5 dark:bg-white/5 backdrop-blur-sm overflow-hidden border-y border-border shadow-sm relative">
+    <div className="w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md overflow-hidden border-b border-border shadow-sm relative">
       <div className="ticker-wrapper relative h-9 overflow-hidden flex items-center">
         <div 
           ref={tickerRef}

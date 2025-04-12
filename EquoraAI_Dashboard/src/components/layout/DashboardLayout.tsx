@@ -22,7 +22,11 @@ import {
   Lightbulb,
   Settings,
   User,
-  LogOut
+  LogOut,
+  Building2,
+  Layers,
+  PieChart,
+  Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -46,6 +50,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const location = useLocation();
   const { theme, speakText, navigationVoice } = useAccessibility();
   const { user } = useAuth();
+  
+  // Scroll to top when path changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
   
   useEffect(() => {
     // Subscribe to sentiment data updates
@@ -78,24 +87,29 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     return 'bg-gradient-to-r from-blue-600/90 to-blue-500/90';
   };
 
-  // Organized navigation items with sections
+  // Navigation sections and items
   const navSections = [
     {
       title: "Overview",
       items: [
-        { name: 'Market Overview', path: '/', icon: <Home size={16} /> },
-        { name: 'OHLC View', path: '/sector-analysis', icon: <LineChart size={16} /> },
-        { name: 'Stock Sentiment', path: '/stock-sentiment', icon: <TrendingUp size={16} /> },
-        { name: 'News Impact', path: '/news-impact', icon: <Newspaper size={16} /> },
+        { name: 'Dashboard', path: '/', icon: <Home size={16} /> },
       ]
     },
     {
       title: "Markets",
       items: [
-        { name: 'Portfolio', path: '/portfolio', icon: <Briefcase size={16} /> },
-        { name: 'Cryptocurrency', path: '/cryptocurrency', icon: <Bitcoin size={16} /> },
-        { name: 'Regulatory', path: '/regulatory', icon: <Landmark size={16} /> },
+        { name: 'Market Overview', path: '/sector-analysis', icon: <TrendingUp size={16} /> },
+        { name: 'Stock Sentiment', path: '/stock-sentiment', icon: <BarChart size={16} /> },
+        { name: 'Global Market Status', path: '/global-market-status', icon: <Landmark size={16} /> },
+        { name: 'Ticker Search', path: '/ticker-search', icon: <Search size={16} /> },
+        { name: 'Forex Analysis', path: '/forex-analysis', icon: <DollarSign size={16} /> },
+        { name: 'News Impact', path: '/news-impact', icon: <Newspaper size={16} /> },
+        { name: 'Cryptocurrency', path: '/cryptocurrency', icon: <TrendingUp size={16} /> },
+        { name: 'Crypto News', path: '/crypto-news', icon: <Newspaper size={16} /> },
+        { name: 'Portfolio', path: '/portfolio', icon: <Layers size={16} /> },
         { name: 'Financial Planning', path: '/financial-planning', icon: <DollarSign size={16} /> },
+        { name: 'Crypto View', path: '/crypto-view', icon: <Bitcoin size={16} /> },
+        { name: 'Earnings Transcript', path: '/earnings-transcript', icon: <FileText size={16} /> },
       ]
     },
     {
@@ -144,10 +158,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className={cn("min-h-screen flex flex-col", theme === 'dark' ? 'dark bg-gray-900' : 'bg-gray-50')}>
+    <div className={cn("min-h-screen flex flex-col overflow-x-hidden", theme === 'dark' ? 'dark bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
       <header className={cn(
-        "sticky top-0 z-50 w-full border-b px-4 py-3 flex items-center justify-between shadow-sm",
+        "fixed top-0 left-0 right-0 z-50 w-full border-b px-4 py-3 flex items-center justify-between shadow-sm",
         theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
       )}>
         <div className="flex items-center">
@@ -213,21 +227,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       </header>
       
       {/* Live Data Ticker */}
-      <LiveDataTicker />
+      <div className="fixed top-[56px] left-0 right-0 z-40 w-full">
+        <LiveDataTicker />
+      </div>
       
       {/* Main content with scrolling sidebar */}
-      <main className="flex flex-1 h-screen overflow-hidden" id="main-content">
+      <main className="flex flex-1 h-screen overflow-hidden pt-[92px]" id="main-content">
         {/* Sidebar for navigation on larger screens */}
         <aside
           className={cn(
-            "w-64 bg-white/80 dark:bg-gray-900/90 backdrop-blur-md border-r border-border z-10 transition-all duration-300 ease-in-out overflow-y-auto h-full",
-            isMobile ? "fixed inset-y-0 left-0 transform" : "relative",
+            "w-64 bg-white/80 dark:bg-gray-900/90 backdrop-blur-md border-r border-border z-10 transition-all duration-300 ease-in-out h-full",
+            isMobile ? "fixed inset-y-0 left-0 transform" : "fixed top-[92px] bottom-0 left-0",
             isMobile && !menuOpen ? "-translate-x-full" : "translate-x-0"
           )}
           aria-label="Navigation sidebar"
           aria-hidden={isMobile && !menuOpen}
         >
-          <div className="h-full flex flex-col p-4">
+          <div className="h-full flex flex-col p-4 overflow-y-auto">
             <div className="py-4">
               <h2 className="text-lg font-medium text-primary">Dashboard</h2>
             </div>
@@ -245,6 +261,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                         onClick={() => {
                           handleNavClick(item.path);
                           handleSpeakNavItem(item.name);
+                          window.scrollTo(0, 0);
                         }}
                         className={cn(
                           "w-full text-left flex items-center space-x-3 px-3 py-2 rounded-md transition-colors",
@@ -281,7 +298,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         
         {/* Main dashboard content with improved background and scrolling */}
         <div className={cn(
-          "flex-1 overflow-y-auto p-4 md:p-6 bg-gradient-to-br",
+          "flex-1 overflow-y-auto p-4 md:p-6 bg-gradient-to-br ml-0 md:ml-64",
           theme === 'dark' 
             ? "from-gray-900 to-blue-950" 
             : "from-blue-50 to-indigo-50"

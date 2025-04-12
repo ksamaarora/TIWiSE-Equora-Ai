@@ -13,10 +13,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAccessibility } from '@/lib/accessibility';
 import { cn } from '@/lib/utils';
+import { updateUserPassword } from '../lib/firebase';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -55,6 +56,11 @@ const Profile = () => {
     amount: '$15.99',
     status: 'Active'
   });
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   // Load user data when component mounts
   useEffect(() => {
@@ -102,10 +108,45 @@ const Profile = () => {
   };
 
   // Handle password change
-  const handlePasswordChange = (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would call an API to change the password
-    toast.success('Password changed successfully');
+    
+    if (!user) {
+      toast.error('You must be logged in to change your password');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    
+    setPasswordLoading(true);
+    
+    try {
+      await updateUserPassword(user, currentPassword, newPassword);
+      toast.success('Password changed successfully');
+      // Clear form
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      console.error('Failed to change password:', error);
+      if (error.code === 'auth/wrong-password') {
+        toast.error('Current password is incorrect');
+      } else if (error.code === 'auth/requires-recent-login') {
+        toast.error('Please log in again before changing your password');
+      } else {
+        toast.error('Failed to change password');
+      }
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
   return (
@@ -495,22 +536,42 @@ const Profile = () => {
                         <div className="space-y-2">
                           <Label htmlFor="currentPassword">Current Password</Label>
                           <div className="relative">
-                            <Input id="currentPassword" type="password" />
+                            <Input 
+                              id="currentPassword" 
+                              type="password" 
+                              value={currentPassword}
+                              onChange={(e) => setCurrentPassword(e.target.value)}
+                              required
+                            />
                           </div>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="newPassword">New Password</Label>
                           <div className="relative">
-                            <Input id="newPassword" type="password" />
+                            <Input 
+                              id="newPassword" 
+                              type="password" 
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              required
+                            />
                           </div>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="confirmPassword">Confirm New Password</Label>
                           <div className="relative">
-                            <Input id="confirmPassword" type="password" />
+                            <Input 
+                              id="confirmPassword" 
+                              type="password" 
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              required
+                            />
                           </div>
                         </div>
-                        <Button type="submit">Update Password</Button>
+                        <Button type="submit" disabled={passwordLoading}>
+                          {passwordLoading ? 'Updating...' : 'Update Password'}
+                        </Button>
                       </form>
                     </div>
                       

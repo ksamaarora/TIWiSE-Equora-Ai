@@ -49,6 +49,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Avatar } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Newsy from '@/components/dashboard/Newsy';
 
 // Constants
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#A4DE6C', '#D0ED57'];
@@ -512,52 +513,7 @@ const Cryptocurrency: React.FC = () => {
           </Card>
 
           {/* News & Impact */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Newspaper className="mr-2" size={20} />
-                <span>Latest Crypto News</span>
-              </CardTitle>
-              <CardDescription>Recent news and market impact</CardDescription>
-            </CardHeader>
-            <CardContent className="px-0">
-              <ScrollArea className="h-96 px-4">
-                <div className="space-y-4">
-                  {news.map(item => (
-                    <div key={item.id} className="border rounded-md p-3">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-medium text-base">{item.title}</h3>
-                        <Badge variant={
-                          item.sentiment === 'positive' ? 'default' : 
-                          item.sentiment === 'negative' ? 'destructive' : 'secondary'
-                        }>
-                          {item.sentiment}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center mt-2 text-sm text-muted-foreground">
-                        <span>{item.source}</span>
-                        <span>{timeAgo(item.publishedAt)}</span>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {item.coins.map(coin => (
-                          <Badge key={coin} variant="outline" className="capitalize">
-                            {coin}
-                          </Badge>
-                        ))}
-                      </div>
-                      <Button 
-                        variant="link" 
-                        className="px-0 h-auto text-sm mt-1 flex items-center" 
-                        onClick={() => window.open(item.url, '_blank')}
-                      >
-                        Read more <ArrowRight size={12} className="ml-1" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+          <Newsy maxItems={5} />
         </div>
 
         {/* Cryptocurrency Table */}

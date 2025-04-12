@@ -3,6 +3,8 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useDiscussions, DiscussionCategory, Message, DiscussionThread, Chatroom, User } from '@/services/discussionService';
 import { useAccessibility } from '@/lib/accessibility';
 import { cn } from '@/lib/utils';
+import { Link, useNavigate } from 'react-router-dom';
+import { useChatRooms } from '@/services/chatRoomService';
 
 // Import UI components
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -651,7 +653,7 @@ const Discussions: React.FC = () => {
             {/* Main content area */}
             <div className="md:col-span-3">
               <Tabs value={activeTab} onValueChange={handleTabChange}>
-                <TabsList className="grid grid-cols-3 mb-6">
+                <TabsList className="grid grid-cols-4 mb-6">
                   <TabsTrigger value="threads" className="flex items-center justify-center gap-2">
                     <MessageSquareText className="h-4 w-4" />
                     <span>Discussion Threads</span>
@@ -659,6 +661,10 @@ const Discussions: React.FC = () => {
                   <TabsTrigger value="chatrooms" className="flex items-center justify-center gap-2">
                     <MessageCircle className="h-4 w-4" />
                     <span>Chat Rooms</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="realtime-chat" className="flex items-center justify-center gap-2">
+                    <Users className="h-4 w-4" />
+                    <span>Real-time Chat</span>
                   </TabsTrigger>
                   <TabsTrigger value="insights" className="flex items-center justify-center gap-2">
                     <Sparkles className="h-4 w-4" />
@@ -739,6 +745,83 @@ const Discussions: React.FC = () => {
                       />
                     ))}
                   </div>
+                </TabsContent>
+                
+                {/* Real-time Chat Tab */}
+                <TabsContent value="realtime-chat" className="space-y-6">
+                  <Card className="overflow-hidden">
+                    <CardHeader className="pb-0">
+                      <CardTitle className="text-lg">Real-time Chat Rooms</CardTitle>
+                      <CardDescription>
+                        Create and join real-time chat rooms with WebSocket support for instant messaging
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        <div className="flex flex-col items-center justify-center p-6 text-center bg-muted/50 rounded-lg">
+                          <BrainCircuit className="h-10 w-10 mb-4 text-primary opacity-70" />
+                          <h3 className="text-lg font-medium mb-2">Enhanced Chat Experience</h3>
+                          <p className="text-muted-foreground max-w-md mb-6">
+                            Our new real-time chat feature lets you create shareable chat rooms with WebSocket support for instant messaging.
+                          </p>
+                          <div className="flex gap-4">
+                            <Button asChild>
+                              <Link to="/chat">Browse Chat Rooms</Link>
+                            </Button>
+                            <Button variant="outline" asChild>
+                              <Link to="/chat">Create New Room</Link>
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                          <Card>
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-base">Create Custom Rooms</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground">
+                                Create chat rooms for specific topics and invite others by sharing a unique URL.
+                              </p>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card>
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-base">Real-time Messaging</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground">
+                                Exchange messages instantly with WebSockets technology for a seamless experience.
+                              </p>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card>
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-base">Shareable Links</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground">
+                                Easily share your chat rooms via email or by copying a direct link.
+                              </p>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card>
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-base">Private Discussions</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground">
+                                Only those with the link can join your chat room, ensuring privacy for your discussions.
+                              </p>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
                 
                 {/* Insights Tab */}

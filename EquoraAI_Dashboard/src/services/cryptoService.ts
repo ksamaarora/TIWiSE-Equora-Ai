@@ -206,8 +206,8 @@ const mockCryptoNews: CryptoNewsItem[] = [
   {
     id: '1',
     title: 'Bitcoin ETFs see record inflows as price surges above $55K',
-    url: 'https://example.com/news/1',
-    source: 'CryptoNews',
+    url: 'https://www.coindesk.com/markets/2024/03/02/bitcoin-etfs-record-inflows/',
+    source: 'CoinDesk',
     publishedAt: new Date(Date.now() - 3600000 * 2), // 2 hours ago
     sentiment: 'positive',
     relevance: 0.95,
@@ -216,8 +216,8 @@ const mockCryptoNews: CryptoNewsItem[] = [
   {
     id: '2',
     title: 'Ethereum developer activity reaches all-time high ahead of ETH2 upgrades',
-    url: 'https://example.com/news/2',
-    source: 'BlockchainDaily',
+    url: 'https://cointelegraph.com/news/ethereum-devs-activity-all-time-high',
+    source: 'Cointelegraph',
     publishedAt: new Date(Date.now() - 3600000 * 5), // 5 hours ago
     sentiment: 'positive',
     relevance: 0.92,
@@ -226,8 +226,8 @@ const mockCryptoNews: CryptoNewsItem[] = [
   {
     id: '3',
     title: 'Regulatory concerns weigh on crypto market as governments signal tighter control',
-    url: 'https://example.com/news/3',
-    source: 'CoinDesk',
+    url: 'https://www.reuters.com/technology/crypto-regulation-global-tightening-2024-05-08/',
+    source: 'Reuters',
     publishedAt: new Date(Date.now() - 3600000 * 10), // 10 hours ago
     sentiment: 'negative',
     relevance: 0.88,
@@ -236,8 +236,8 @@ const mockCryptoNews: CryptoNewsItem[] = [
   {
     id: '4',
     title: 'Solana experiences network outage, SOL price drops',
-    url: 'https://example.com/news/4',
-    source: 'CryptoTicker',
+    url: 'https://www.theblock.co/post/265876/solana-network-outage-sol-price',
+    source: 'The Block',
     publishedAt: new Date(Date.now() - 3600000 * 24), // 1 day ago
     sentiment: 'negative',
     relevance: 0.87,
@@ -246,12 +246,32 @@ const mockCryptoNews: CryptoNewsItem[] = [
   {
     id: '5',
     title: 'Dogecoin rallies after celebrity endorsements on social media',
-    url: 'https://example.com/news/5',
-    source: 'CryptoHub',
+    url: 'https://decrypt.co/214368/dogecoin-rallies-after-celebrity-endorsement',
+    source: 'Decrypt',
     publishedAt: new Date(Date.now() - 3600000 * 36), // 1.5 days ago
     sentiment: 'positive',
     relevance: 0.81,
     coins: ['doge']
+  },
+  {
+    id: '6',
+    title: 'Cardano completes Hydra upgrade, promises improved transaction throughput',
+    url: 'https://ambcrypto.com/cardano-hydra-update-transaction-throughput/',
+    source: 'AMBCrypto',
+    publishedAt: new Date(Date.now() - 3600000 * 48), // 2 days ago
+    sentiment: 'positive',
+    relevance: 0.79,
+    coins: ['ada']
+  },
+  {
+    id: '7',
+    title: 'NFT marketplace sees surge in trading volume as digital collectibles gain momentum',
+    url: 'https://nftevening.com/opensea-trading-volume-surge-2024/',
+    source: 'NFT Evening',
+    publishedAt: new Date(Date.now() - 3600000 * 60), // 2.5 days ago
+    sentiment: 'positive',
+    relevance: 0.75,
+    coins: ['eth', 'sol']
   }
 ];
 

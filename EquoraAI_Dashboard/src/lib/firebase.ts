@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, User, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 
 const firebaseConfig = {
@@ -54,6 +54,21 @@ export const logOut = async () => {
     await signOut(auth);
   } catch (error) {
     console.error('Error signing out:', error);
+    throw error;
+  }
+};
+
+export const updateUserPassword = async (user: User, currentPassword: string, newPassword: string) => {
+  try {
+    // Re-authenticate the user before changing the password
+    const credential = EmailAuthProvider.credential(user.email || '', currentPassword);
+    await reauthenticateWithCredential(user, credential);
+    
+    // Update the password
+    await updatePassword(user, newPassword);
+    return true;
+  } catch (error) {
+    console.error('Error updating password:', error);
     throw error;
   }
 };

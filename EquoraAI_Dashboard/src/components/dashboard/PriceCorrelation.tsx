@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -68,16 +67,31 @@ const PriceCorrelation: React.FC<PriceCorrelationProps> = ({ stocks, loading }) 
     const quadrants = [0, 0, 0, 0]; // Q1, Q2, Q3, Q4
     
     transformedData.forEach(stock => {
-      if (stock.x >= 0 && stock.y >= 0) quadrants[0]++; // Q1: +Change, +Correlation
-      if (stock.x < 0 && stock.y >= 0) quadrants[1]++; // Q2: -Change, +Correlation
-      if (stock.x < 0 && stock.y < 0) quadrants[2]++; // Q3: -Change, -Correlation
-      if (stock.x >= 0 && stock.y < 0) quadrants[3]++; // Q4: +Change, -Correlation
+      // Count dots based on their actual position in the quadrants
+      if (stock.x >= 0 && stock.y >= 0) quadrants[0]++; // Q1: +Change, +Correlation (green)
+      if (stock.x < 0 && stock.y >= 0) quadrants[1]++; // Q2: -Change, +Correlation (orange/yellow)
+      if (stock.x < 0 && stock.y < 0) quadrants[2]++; // Q3: -Change, -Correlation (red)
+      if (stock.x >= 0 && stock.y < 0) quadrants[3]++; // Q4: +Change, -Correlation (blue)
     });
     
     return quadrants;
   };
   
   const quadrants = getQuadrantAnalysis();
+
+  // Map colors to match the quadrant box colors
+  const getQuadrantColor = (x: number, y: number) => {
+    if (x >= 0 && y >= 0) return "#22c55e"; // Q1: Green
+    if (x < 0 && y >= 0) return "#f97316"; // Q2: Orange
+    if (x < 0 && y < 0) return "#ef4444"; // Q3: Red
+    return "#3b82f6"; // Q4: Blue
+  };
+
+  // Update transformed data to use quadrant-based colors
+  const enhancedData = transformedData.map(stock => ({
+    ...stock,
+    color: getQuadrantColor(stock.x, stock.y)
+  }));
 
   return (
     <Card>
@@ -127,9 +141,16 @@ const PriceCorrelation: React.FC<PriceCorrelationProps> = ({ stocks, loading }) 
                       <Tooltip content={customTooltip} />
                       <ReferenceLine x={0} stroke="#666" strokeDasharray="3 3" />
                       <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                      
+                      {/* Quadrant labels */}
+                      <text x="80%" y="20%" textAnchor="middle" fill="#22c55e" fontSize="12">Q1</text>
+                      <text x="20%" y="20%" textAnchor="middle" fill="#f97316" fontSize="12">Q2</text>
+                      <text x="20%" y="80%" textAnchor="middle" fill="#ef4444" fontSize="12">Q3</text>
+                      <text x="80%" y="80%" textAnchor="middle" fill="#3b82f6" fontSize="12">Q4</text>
+                      
                       <Scatter 
                         name="Stocks" 
-                        data={transformedData} 
+                        data={enhancedData} 
                         fill="#8884d8"
                         shape={(props: any) => {
                           const { cx, cy, fill } = props;
@@ -150,10 +171,10 @@ const PriceCorrelation: React.FC<PriceCorrelationProps> = ({ stocks, loading }) 
                   <ChartLegend>
                     <ChartLegendContent
                       payload={[
-                        { value: "High Correlation", color: chartConfig.high.color },
-                        { value: "Medium Correlation", color: chartConfig.medium.color },
-                        { value: "Low Correlation", color: chartConfig.low.color },
-                        { value: "Negative Correlation", color: chartConfig.negative.color },
+                        { value: "Q1: Positive Change & Correlation", color: "#22c55e" },
+                        { value: "Q2: Negative Change, Positive Correlation", color: "#f97316" },
+                        { value: "Q3: Negative Change & Correlation", color: "#ef4444" },
+                        { value: "Q4: Positive Change, Negative Correlation", color: "#3b82f6" },
                       ]}
                     />
                   </ChartLegend>
